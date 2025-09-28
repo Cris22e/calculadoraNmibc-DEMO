@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Demo · Calculadora de riesgo NMIBC tras BCG (no clínica)</title>
+<style>
+  :root{--bg:#ffffff;--fg:#0f172a;--muted:#64748b;--accent:#0f172a;--primary:#0ea5e9;--ok:#16a34a;--warn:#f59e0b;--bad:#ef4444;}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
+  .brand{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
+  .brand h1{font-size:22px;margin:0}
+  .brand small{color:var(--muted);display:block;margin-top:6px}
+  .badge{padding:6px 10px;border-radius:999px;background:var(--primary);color:#fff;font-weight:700;font-size:12px;white-space:nowrap}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 6px 24px rgba(15,23,42,.06)}
+  .hdr{padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:12px;justify-content:space-between}
+  .hdr .meta{font-size:12px;color:#475569;text-align:right}
+  .body{padding:20px}
+  fieldset{border:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  label{font-size:13px;color:var(--muted)} input, select{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;font-size:14px}
+  .actions{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
+  button{padding:10px 14px;border:0;border-radius:10px;cursor:pointer;font-weight:600}
+  .primary{background:var(--primary);color:#fff} .ghost{background:#f8fafc;color:#0f172a;border:1px solid #e5e7eb}
+  .out{margin-top:18px;border-top:1px dashed #e5e7eb;padding-top:14px}
+  .risk{display:flex;align-items:center;gap:10px;margin:8px 0 2px}
+  .chip{padding:4px 8px;border-radius:8px;color:#fff;font-weight:700;font-size:13px}
+  .low{background:var(--ok)} .mid{background:var(--warn)} .high{background:var(--bad)}
+  .muted{color:var(--muted);font-size:13px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .kpi{border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;text-align:center}
+  .kpi h3{margin:0;font-size:18px} .kpi p{margin:6px 0 0;color:#64748b;font-size:12px}
+  .foot{padding:14px 20px;border-top:1px solid #e5e7eb;background:#fcfcfd;border-radius:0 0 14px 14px;color:#475569;font-size:12px}
+  @media (max-width:980px){fieldset{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:680px){fieldset{grid-template-columns:1fr} .brand{flex-direction:column} .hdr{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <div>
+        <h1>IA aplicada al seguimiento del NMIBC tras BCG</h1>
+        <small>Autor: <b>Cristian Expósito Rodríguez</b> · Presentado en: <b>30º Congreso Sociedad Canaria de Urología</b></small>
+      </div>
+      <span class="badge">DEMO · NO CLÍNICA</span>
+    </div>
+
+    <div class="card">
+      <div class="hdr">
+        <div>
+          <strong>Calculadora demo · Riesgo de recurrencia (12 y 24 meses)</strong>
+        </div>
+        <div class="meta">Versión demostrativa para póster · No utilizar para decisiones clínicas</div>
+      </div>
+
+      <div class="body">
+        <fieldset>
+          <!-- Demografía / comorbilidad -->
+          <div><label>Edad (años)</label><input id="edad" type="number" min="18" max="100" placeholder="ej. 71"></div>
+          <div><label>Sexo</label><select id="sexo"><option value="0">Varón</option><option value="1">Mujer</option></select></div>
+          <div><label>Charlson</label><input id="charlson" type="number" min="0" max="15" placeholder="ej. 2"></div>
+
+          <!-- Tumor (CLAVE) -->
+          <div><label>Estadio</label><select id="estadio"><option value="0">Ta</option><option value="1">T1</option></select></div>
+          <div><label>Grado</label><select id="grado"><option value="0">Bajo</option><option value="1">Alto</option></select></div>
+          <div><label>CIS concomitante</label><select id="cis"><option value="0">No</option><option value="1">Sí</option></select></div>
+
+          <div><label>Nº de tumores</label><select id="nTum"><option value="0">Único</option><option value="1">2–7</option><option value="2">≥8</option></select></div>
+          <div><label>Tamaño tumoral</label><select id="tam"><option value="0">&le; 30 mm</option><option value="1">&gt; 30 mm</option></select></div>
+          <div><label>Recurrencia previa</label><select id="recPrev"><option value="0">No</option><option value="1">Sí</option></select></div>
+
+          <!-- Tratamiento -->
+          <div><label>BCG completa (inducción)</label><select id="bcgComp"><option value="1">Sí</option><option value="0">No</option></select></div>
+          <div><label>BCG de mantenimiento</label><select id="mto"><option value="1">Sí</option><option value="0">No</option></select></div>
+          <div><label>Nº de RTU previas</label><input id="nRTU" type="number" min="0" max="10" placeholder="ej. 1"></div>
+
+          <div><label>Re-RTU</label><select id="reRTU"><option value="0">No</option><option value="1">Sí</option></select></div>
+          <div><label>Citología pre-BCG</label><select id="cito"><option value="0">Negativa</option><option value="1">Positiva</option></select></div>
+          <div><label>Días hasta 1ª BCG</label><input id="dias1" type="number" min="0" max="180" placeholder="ej. 42"></div>
+
+          <!-- Analíticas y otros -->
+          <div><label>Hemoglobina (g/dL)</label><input id="hb" type="number" step="0.1" min="6" max="20" placeholder="ej. 13.5"></div>
+          <div><label>Plaquetas (10^3/µL)</label><input id="plt" type="number" min="50" max="800" placeholder="ej. 280"></div>
+          <div><label>Creatinina (mg/dL)</label><input id="crea" type="number" step="0.01" min="0.3" max="10" placeholder="ej. 0.98"></div>
+
+          <div><label>PCR (mg/L)</label><input id="pcr" type="number" step="0.1" min="0" max="300" placeholder="ej. 4.2"></div>
+          <div><label>Tabaquismo</label><select id="tabaco"><option value="0">No</option><option value="1">Sí</option></select></div>
+          <div><label>Portador de sonda vesical</label><select id="sonda"><option value="0">No</option><option value="1">Sí</option></select></div>
+
+          <div><label>ITU previas</label><select id="itu"><option value="0">No</option><option value="1">Sí</option></select></div>
+          <div><label>IMC</label><input id="imc" type="number" step="0.1" min="16" max="45" placeholder="ej. 27.4"></div>
+          <div></div>
+        </fieldset>
+
+        <div class="actions">
+          <button class="primary" onclick="calcular()">Calcular riesgo</button>
+          <button class="ghost" onclick="limpiar()">Limpiar</button>
+        </div>
+
+        <div class="out">
+          <div class="risk">
+            <div id="badge" class="chip low">Bajo</div>
+            <div id="resumen" style="font-weight:600">—</div>
+          </div>
+          <div class="muted">Estimación demostrativa a 12 y 24 meses (no clínica).</div>
+          <div class="grid3">
+            <div class="kpi"><h3 id="r12">—</h3><p>Riesgo 12 meses</p></div>
+            <div class="kpi"><h3 id="r24">—</h3><p>Riesgo 24 meses</p></div>
+            <div class="kpi"><h3 id="grupo">—</h3><p>Grupo de riesgo</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        Autor: <b>Cristian Expósito Rodríguez</b> · 30º Congreso Sociedad Canaria de Urología ·
+        Esta herramienta es una <b>demo educativa</b> que emula el comportamiento del modelo (no clínica).
+      </div>
+    </div>
+  </div>
+
+<script>
+// Lógica basada SOLO en las 6 casillas clave para que "tenga sentido" al jugar
+function calcular(){
+  // Claves
+  const estadio = +document.getElementById('estadio').value;   // 0=Ta, 1=T1
+  const grado   = +document.getElementById('grado').value;     // 0=Bajo, 1=Alto
+  const cis     = +document.getElementById('cis').value;       // 0/1
+  const nTum    = +document.getElementById('nTum').value;      // 0=Único, 1=2–7, 2=≥8
+  const tam     = +document.getElementById('tam').value;       // 0=≤30mm, 1=>30mm
+  const recPrev = +document.getElementById('recPrev').value;   // 0/1
+
+  // Puntuación intuitiva
+  let pts = 0;
+  if (estadio === 1) pts += 3;          // T1
+  if (grado   === 1) pts += 3;          // Alto
+  if (cis     === 1) pts += 3;          // CIS
+  if (nTum === 1)    pts += 2;          // 2–7
+  else if (nTum===2) pts += 3;          // ≥8
+  if (tam === 1)     pts += 2;          // >30mm
+  if (recPrev === 1) pts += 2;          // recurrencia previa
+
+  // Reglas de sentido común
+  // a) Bajo claro: Ta + Bajo + sin CIS + Único + ≤30mm
+  if (estadio===0 && grado===0 && cis===0 && nTum===0 && tam===0){
+    const p12 = recPrev ? 0.10 : 0.06;
+    const p24 = recPrev ? 0.20 : 0.12;
+    return pintar("Bajo","low",p12,p24);
+  }
+  // b) Alto robusto: T1 + Alto + ( >1 tumor || >3cm || CIS || recPrev )
+  if (estadio===1 && grado===1 && (nTum>0 || tam===1 || cis===1 || recPrev===1)){
+    return pintar("Alto","high",0.30,0.55);
+  }
+
+  // Mapeo puntos -> grupo
+  let grupo, badge, p12, p24;
+  if      (pts <= 2){  grupo="Bajo";        badge="low";  p12=0.06; p24=0.12; }
+  else if (pts <= 6){  grupo="Intermedio";  badge="mid";  p12=0.15; p24=0.28; }
+  else if (pts <= 10){ grupo="Alto";        badge="high"; p12=0.25; p24=0.45; }
+  else {               grupo="Alto";        badge="high"; p12=0.35; p24=0.60; }
+
+  return pintar(grupo,badge,p12,p24);
+}
+
+function pintar(grupo, badge, p12, p24){
+  document.getElementById('badge').className = "chip " + badge;
+  document.getElementById('badge').textContent = grupo;
+  document.getElementById('resumen').textContent =
+    `Estimación a 12m: ${(p12*100).toFixed(0)}% · 24m: ${(p24*100).toFixed(0)}%`;
+  document.getElementById('r12').textContent = (p12*100).toFixed(0) + "%";
+  document.getElementById('r24').textContent = (p24*100).toFixed(0) + "%";
+  document.getElementById('grupo').textContent = grupo;
+}
+
+function limpiar(){
+  document.querySelectorAll('input').forEach(i=>i.value="");
+  document.querySelectorAll('select').forEach(s=>s.selectedIndex=0);
+  document.getElementById('badge').className = "chip low";
+  document.getElementById('badge').textContent = "Bajo";
+  document.getElementById('resumen').textContent = "—";
+  document.getElementById('r12').textContent = "—";
+  document.getElementById('r24').textContent = "—";
+  document.getElementById('grupo').textContent = "—";
+}
+</script>
+</body>
+</html>
